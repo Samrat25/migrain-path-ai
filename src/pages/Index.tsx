@@ -17,9 +17,11 @@ import {
   Target,
   Activity
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-medical.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
   const workflowSteps = [
     {
       icon: UserCheck,
@@ -119,7 +121,7 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="shadow-glow">
+                <Button size="lg" className="shadow-glow" onClick={() => navigate("/login")}>
                   <Activity className="mr-2 h-5 w-5" />
                   Start Analysis
                 </Button>
@@ -192,11 +194,11 @@ const Index = () => {
             for better migraine diagnosis and treatment outcomes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="shadow-lg">
+            <Button size="lg" variant="secondary" className="shadow-lg" onClick={() => navigate("/login")}>
               <Users className="mr-2 h-5 w-5" />
               For Healthcare Providers
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" onClick={() => navigate("/login")}>
               <UserCheck className="mr-2 h-5 w-5" />
               For Patients
             </Button>

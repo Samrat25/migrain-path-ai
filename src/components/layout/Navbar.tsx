@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Brain, Menu, User } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -27,11 +29,11 @@ const Navbar = () => {
             <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
               About
             </a>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
               <User className="h-4 w-4 mr-2" />
               Sign In
             </Button>
-            <Button size="sm" className="shadow-medical">
+            <Button size="sm" className="shadow-medical" onClick={() => navigate("/login")}>
               Get Started
             </Button>
           </div>
@@ -62,11 +64,11 @@ const Navbar = () => {
                 About
               </a>
               <div className="flex flex-col space-y-2 pt-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
                   <User className="h-4 w-4 mr-2" />
                   Sign In
                 </Button>
-                <Button size="sm" className="shadow-medical">
+                <Button size="sm" className="shadow-medical" onClick={() => navigate("/login")}>
                   Get Started
                 </Button>
               </div>
