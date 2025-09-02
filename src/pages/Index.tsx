@@ -31,14 +31,14 @@ const Index = () => {
     },
     {
       icon: ClipboardList,
-      title: "Migraine Survey",
-      description: "Complete comprehensive survey to detect migraine type and patterns",
+      title: "Migrant Survey",
+      description: "Complete comprehensive survey to detect disease type and patterns",
       stepNumber: 2
     },
     {
       icon: Upload,
       title: "MRI Upload",
-      description: "Upload brain MRI scans for AI-powered migraine prediction analysis",
+      description: "Upload brain MRI scans for AI-powered disease prediction analysis",
       stepNumber: 3
     },
     {
@@ -65,7 +65,7 @@ const Index = () => {
     {
       icon: Brain,
       title: "AI-Powered Analysis",
-      description: "Advanced machine learning algorithms analyze MRI scans and symptoms for accurate migraine prediction",
+      description: "Advanced machine learning algorithms analyze MRI scans and symptoms for accurate disease prediction",
       highlight: true
     },
     {
@@ -111,13 +111,13 @@ const Index = () => {
                 <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
                   Revolutionizing{" "}
                   <span className="bg-gradient-medical bg-clip-text text-transparent">
-                    Migraine Care
+                    Migrant Care
                   </span>{" "}
                   with AI
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
                   Advanced AI analysis of MRI scans and symptoms, combined with expert medical review, 
-                  delivering personalized migraine management and prevention strategies.
+                  delivering personalized disease management and prevention strategies.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -152,7 +152,7 @@ const Index = () => {
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               From registration to personalized treatment plans, our platform guides patients 
-              through every step of comprehensive migraine care.
+              through every step of comprehensive disease care.
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-6">
@@ -172,7 +172,7 @@ const Index = () => {
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Our comprehensive platform combines cutting-edge AI technology with 
-              clinical expertise to deliver superior migraine management.
+              clinical expertise to deliver superior disease management.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -187,11 +187,11 @@ const Index = () => {
       <section className="py-20 bg-gradient-medical text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Ready to Transform Migraine Care?
+            Ready to Transform Migrant Care?
           </h2>
           <p className="text-xl opacity-90 mb-8 leading-relaxed">
             Join healthcare professionals and patients already using our AI-powered platform 
-            for better migraine diagnosis and treatment outcomes.
+            for better disease diagnosis and treatment outcomes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" className="shadow-lg" onClick={() => navigate("/login")}>

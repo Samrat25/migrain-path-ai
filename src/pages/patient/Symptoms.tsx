@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Brain, Activity, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { api, getSession } from "@/lib/api";
 
 const Symptoms = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const Symptoms = () => {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const selectedSymptoms = Object.keys(symptoms).filter(key => symptoms[key]);
     
     if (selectedSymptoms.length === 0) {
@@ -53,15 +54,30 @@ const Symptoms = () => {
       return;
     }
 
-    toast({
-      title: "Symptoms Recorded",
-      description: "Generating AI analysis report with your MRI and symptom data...",
-    });
-
-    // Simulate AI processing
-    setTimeout(() => {
+    const session = getSession();
+    if (!session) {
+      toast({ title: "Not logged in", description: "Please login again.", variant: "destructive" });
+      navigate("/login");
+      return;
+    }
+    try {
+      const text = [
+        ...selectedSymptoms,
+        additionalInfo && `notes:${additionalInfo}`,
+        duration && `duration:${duration}`,
+        location && `location:${location}`,
+        `pain:${painLevel[0]}`,
+      ].filter(Boolean).join(", ");
+      await api.saveSymptoms(session.id, text);
+      await api.generateReport(session.id);
+      toast({
+        title: "Symptoms Recorded",
+        description: "Generating migrant report...",
+      });
       navigate("/patient/report");
-    }, 3000);
+    } catch (e: any) {
+      toast({ title: "Failed to save symptoms", description: e.message, variant: "destructive" });
+    }
   };
 
   const selectedCount = Object.values(symptoms).filter(Boolean).length;

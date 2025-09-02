@@ -18,7 +18,7 @@ const Survey = () => {
   const questions = [
     {
       id: "frequency",
-      title: "How often do you experience migraines?",
+      title: "How often do you experience headaches?",
       type: "radio",
       options: [
         { value: "daily", label: "Daily" },
@@ -29,7 +29,7 @@ const Survey = () => {
     },
     {
       id: "duration",
-      title: "How long do your migraines typically last?",
+      title: "How long do your headaches typically last?",
       type: "radio",
       options: [
         { value: "hours", label: "A few hours" },
@@ -40,7 +40,7 @@ const Survey = () => {
     },
     {
       id: "intensity",
-      title: "How would you rate your migraine pain intensity?",
+      title: "How would you rate your pain intensity?",
       type: "radio",
       options: [
         { value: "mild", label: "Mild (1-3/10)" },
@@ -51,7 +51,7 @@ const Survey = () => {
     },
     {
       id: "location",
-      title: "Where is your migraine pain typically located?",
+      title: "Where is the pain typically located?",
       type: "radio",
       options: [
         { value: "unilateral", label: "One side of head" },
@@ -73,7 +73,7 @@ const Survey = () => {
     },
     {
       id: "triggers",
-      title: "What are your common migraine triggers?",
+      title: "What are your common triggers?",
       type: "textarea",
       placeholder: "Describe your common triggers (stress, certain foods, weather changes, etc.)"
     }
@@ -85,18 +85,40 @@ const Survey = () => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
+  const detectDisease = (a: Record<string, string>) => {
+    // Simple heuristic demo
+    const frequencyScore = a.frequency === "daily" ? 3 : a.frequency === "weekly" ? 2 : a.frequency === "monthly" ? 1 : 0;
+    const intensityScore = a.intensity === "extreme" ? 3 : a.intensity === "severe" ? 2 : a.intensity === "moderate" ? 1 : 0;
+    const symptomScore = a.symptoms === "multiple" ? 3 : a.symptoms === "visual" ? 2 : a.symptoms ? 1 : 0;
+    const total = frequencyScore + intensityScore + symptomScore;
+
+    let diseaseType = "Unspecified";
+    if (a.symptoms === "visual" && a.location === "unilateral") {
+      diseaseType = "Migraine with Aura";
+    } else if (a.location === "bilateral" && (a.intensity === "mild" || a.intensity === "moderate")) {
+      diseaseType = "Tension Headache";
+    } else if (a.intensity === "extreme" && a.frequency === "daily") {
+      diseaseType = "Cluster Headache";
+    }
+
+    const hasDisease = total >= 3; // threshold for any particular disease suspicion
+    return { hasDisease, diseaseType } as { hasDisease: boolean; diseaseType: string };
+  };
+
   const handleNext = () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete survey
+      const result = detectDisease(answers);
       toast({
-        title: "Survey Completed",
-        description: "Processing your responses to determine migraine type...",
+        title: result.hasDisease ? "Survey Completed: Possible Condition Detected" : "Survey Completed: Low Likelihood Detected",
+        description: result.hasDisease
+          ? `Preliminary indication: ${result.diseaseType}. Proceed to MRI upload for confirmation.`
+          : "No strong indication from survey. You may still proceed to MRI upload.",
       });
       setTimeout(() => {
-        navigate("/patient/mri-upload");
-      }, 2000);
+        navigate("/patient/mri-upload", { state: { surveyResult: result } });
+      }, 1500);
     }
   };
 
@@ -117,10 +139,10 @@ const Survey = () => {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center space-x-2 mb-4">
               <Brain className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">Migraine Assessment Survey</span>
+              <span className="text-2xl font-bold">Disease Assessment Survey</span>
             </div>
             <p className="text-muted-foreground">
-              Help us understand your migraine patterns to provide better analysis
+              Help us understand your patterns to provide better analysis
             </p>
           </div>
 

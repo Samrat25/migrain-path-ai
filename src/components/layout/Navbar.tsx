@@ -14,7 +14,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             <Brain className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold bg-gradient-medical bg-clip-text text-transparent">
-              MigrainePath AI
+              MigrantPath AI
             </span>
           </div>
 

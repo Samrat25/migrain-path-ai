@@ -16,32 +16,50 @@ import {
   Activity
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { api, getSession } from "@/lib/api";
 
 const Report = () => {
   const navigate = useNavigate();
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [serverReport, setServerReport] = useState<any>(null);
 
   useEffect(() => {
-    // Simulate AI analysis progress
-    const interval = setInterval(() => {
-      setAnalysisProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsComplete(true);
-          return 100;
-        }
-        return prev + 15;
-      });
-    }, 500);
+    const session = getSession();
+    if (!session) {
+      navigate('/login');
+      return;
+    }
+    const interval = setInterval(async () => {
+      setAnalysisProgress(prev => (prev >= 100 ? 100 : prev + 20));
+      try {
+        const r = await api.getPatientReport(session.id);
+        if (r) setServerReport(r);
+      } catch {}
+    }, 400);
+    const timeout = setTimeout(() => setIsComplete(true), 2200);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
+  }, [navigate]);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  const reportData = {
+  const reportData = serverReport ? {
+    patientId: `PAT-${serverReport.userId}`,
+    analysisDate: new Date().toLocaleDateString(),
+    diseaseType: serverReport.diagnosis || 'Awaiting Doctor Review',
+    confidence: 80,
+    severity: serverReport.diagnosis ? 'Varies' : 'Pending',
+    recommendations: serverReport.goals ? serverReport.goals.split('\n').filter(Boolean) : [
+      'Await doctor feedback',
+      'Stay hydrated and rest',
+    ],
+    findings: {
+      mriAnalysis: serverReport.mriFilename ? `MRI file: ${serverReport.mriFilename}` : 'No MRI uploaded',
+      symptoms: serverReport.symptoms || 'No symptoms provided',
+      riskFactors: 'Migrant context considered',
+    }
+  } : {
     patientId: "PAT-2024-001",
     analysisDate: new Date().toLocaleDateString(),
-    migrainetype: "Migraine with Aura",
+    diseaseType: "Migraine with Aura",
     confidence: 89,
     severity: "Moderate to Severe",
     recommendations: [
@@ -49,11 +67,11 @@ const Report = () => {
       "Maintain regular sleep schedule (7-8 hours)",
       "Stay hydrated (8-10 glasses of water daily)",
       "Consider prophylactic medication consultation",
-      "Keep a migraine diary to identify triggers"
+      "Keep a headache diary to identify triggers"
     ],
     findings: {
       mriAnalysis: "No structural abnormalities detected. Mild ventricular asymmetry noted.",
-      symptoms: "Classic migraine pattern with visual aura preceding headache",
+      symptoms: "Classic pattern with visual aura preceding headache",
       riskFactors: "Family history, stress, irregular sleep patterns"
     }
   };
@@ -100,7 +118,7 @@ const Report = () => {
               <span className="text-2xl font-bold">AI Analysis Report</span>
             </div>
             <p className="text-muted-foreground">
-              Comprehensive migraine analysis based on MRI and symptoms
+              Comprehensive disease analysis based on MRI and symptoms
             </p>
           </div>
 
@@ -139,7 +157,7 @@ const Report = () => {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-xl font-semibold text-primary mb-2">
-                        {reportData.migrainetype}
+                        {reportData.diseaseType}
                       </h3>
                       <p className="text-muted-foreground">
                         Based on AI analysis of MRI patterns and symptom correlation
@@ -238,7 +256,7 @@ const Report = () => {
                 </CardContent>
               </Card>
 
-              {/* Quick Stats */}
+              {/* Analysis Summary */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Analysis Summary</CardTitle>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,43 +19,28 @@ import {
   Activity
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const pendingReports = [
-    {
-      id: "RPT-001",
-      patientName: "Sarah Johnson",
-      patientId: "PAT-2024-001",
-      submittedAt: "2 hours ago",
-      migrainetype: "Migraine with Aura",
-      confidence: 89,
-      priority: "Medium",
-      status: "pending_review"
-    },
-    {
-      id: "RPT-002",
-      patientName: "Michael Chen",
-      patientId: "PAT-2024-002",
-      submittedAt: "4 hours ago",
-      migrainetype: "Tension Headache",
-      confidence: 76,
-      priority: "Low",
-      status: "pending_review"
-    },
-    {
-      id: "RPT-003",
-      patientName: "Emma Wilson",
-      patientId: "PAT-2024-003",
-      submittedAt: "1 day ago",
-      migrainetype: "Cluster Headache",
-      confidence: 94,
-      priority: "High",
-      status: "pending_review"
-    }
-  ];
+  const [pendingReports, setPendingReports] = useState<any[]>([]);
+  useEffect(() => {
+    api.getReports().then((list: any[]) => {
+      const mapped = list.map((r: any) => ({
+        id: r.id,
+        patientName: r.patient?.name || `User ${r.userId}`,
+        patientId: `PAT-${r.userId}`,
+        submittedAt: 'recently',
+        diseaseType: r.diagnosis || 'Pending',
+        confidence: 80,
+        priority: 'Medium',
+        status: 'pending_review',
+      }));
+      setPendingReports(mapped);
+    }).catch(() => setPendingReports([]));
+  }, []);
 
   const recentActivity = [
     { action: "Report reviewed", patient: "John Doe", time: "1 hour ago" },
@@ -185,7 +170,7 @@ const DoctorDashboard = () => {
                         <div className="grid md:grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">Diagnosis:</span>
-                            <p className="font-medium">{report.migrainetype}</p>
+                            <p className="font-medium">{report.diseaseType}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Confidence:</span>

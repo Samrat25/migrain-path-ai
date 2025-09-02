@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Brain, User, Stethoscope, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { api, setSession } from "@/lib/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,16 +17,15 @@ const Login = () => {
 
   const handleLogin = async (role: string, email: string, password: string) => {
     setIsLoading(true);
-    
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const name = email || "User";
+      const roleLabel = role === "patient" ? "Patient" : role === "doctor" ? "Doctor" : "Admin";
+      const session = await api.login(name, roleLabel as any);
+      setSession(session);
       toast({
         title: "Login Successful",
         description: `Welcome back! Redirecting to ${role} dashboard...`,
       });
-      
-      // Route based on role
       switch (role) {
         case "patient":
           navigate("/patient/survey");
@@ -39,7 +39,11 @@ const Login = () => {
         default:
           navigate("/patient/survey");
       }
-    }, 1500);
+    } catch (e: any) {
+      toast({ title: "Login failed", description: e.message, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = async (role: string, formData: any) => {
@@ -61,7 +65,7 @@ const Login = () => {
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Brain className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold bg-gradient-medical bg-clip-text text-transparent">
-              MigrainePath AI
+              MigrantPath AI
             </span>
           </div>
           <p className="text-muted-foreground">Access your healthcare dashboard</p>

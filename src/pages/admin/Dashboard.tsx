@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,43 +21,22 @@ import {
   BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
   const [isCreateCampOpen, setIsCreateCampOpen] = useState(false);
 
-  const healthCamps = [
-    {
-      id: "HC-001",
-      name: "Downtown Medical Center Screening",
-      location: "Downtown Medical Center, Main St",
-      date: "2024-03-15",
-      time: "09:00 AM - 05:00 PM",
-      registered: 45,
-      capacity: 100,
-      status: "upcoming"
-    },
-    {
-      id: "HC-002", 
-      name: "Community Health Fair",
-      location: "Central Park Community Center",
-      date: "2024-03-22",
-      time: "10:00 AM - 04:00 PM",
-      registered: 67,
-      capacity: 80,
-      status: "upcoming"
-    },
-    {
-      id: "HC-003",
-      name: "University Campus Screening",
-      location: "State University Health Center",
-      date: "2024-03-08",
-      time: "08:00 AM - 06:00 PM",
-      registered: 120,
-      capacity: 150,
-      status: "completed"
-    }
-  ];
+  const [healthCamps, setHealthCamps] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const refresh = async () => {
+    try {
+      const [camps, us] = await Promise.all([api.listCamps(), api.listUsers()]);
+      setHealthCamps(camps);
+      setUsers(us);
+    } catch {}
+  };
+  useEffect(() => { refresh(); }, []);
 
   const systemStats = {
     totalUsers: 1247,
@@ -68,12 +47,18 @@ const AdminDashboard = () => {
     avgResponseTime: "2.3s"
   };
 
-  const createHealthCamp = (formData: FormData) => {
-    toast({
-      title: "Health Camp Created",
-      description: "New health camp has been successfully created and published.",
-    });
-    setIsCreateCampOpen(false);
+  const createHealthCamp = async (formData: FormData) => {
+    const name = String(formData.get('campName') || '');
+    const location = String(formData.get('location') || '');
+    const date = String(formData.get('date') || '');
+    try {
+      await api.createCamp(name, location, date);
+      toast({ title: "Health Camp Created", description: "Published to patients." });
+      setIsCreateCampOpen(false);
+      refresh();
+    } catch (e: any) {
+      toast({ title: "Failed to create camp", description: e.message, variant: "destructive" });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -233,9 +218,7 @@ const AdminDashboard = () => {
                       <div className="flex-1">
                         <div className="flex items-center space-x-4 mb-3">
                           <h3 className="text-lg font-semibold">{camp.name}</h3>
-                          <Badge variant={getStatusColor(camp.status)}>
-                            {camp.status}
-                          </Badge>
+                          <Badge variant="default">upcoming</Badge>
                         </div>
                         <div className="grid md:grid-cols-4 gap-4 text-sm">
                           <div className="flex items-center space-x-2">
@@ -246,14 +229,7 @@ const AdminDashboard = () => {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span>{camp.date}</span>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{camp.time}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span>{camp.registered}/{camp.capacity} registered</span>
-                          </div>
+                          
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -280,9 +256,21 @@ const AdminDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-muted-foreground py-8">
-                  User management interface coming soon...
-                </p>
+                <div className="space-y-2">
+                  {users.map((u) => (
+                    <div key={u.id} className="flex items-center justify-between py-2 border-b">
+                      <div>
+                        <div className="font-medium">{u.name}</div>
+                        <div className="text-xs text-muted-foreground">{u.role}</div>
+                      </div>
+                      {u.role === 'Doctor' && (
+                        <Button size="sm" variant="outline" onClick={async () => { await api.toggleDoctorApproval(u.id); refresh(); }}>
+                          {u.approved ? 'Revoke' : 'Approve'}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

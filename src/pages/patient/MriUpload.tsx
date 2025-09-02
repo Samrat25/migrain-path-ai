@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, FileImage, Check, AlertCircle, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { api, getSession } from "@/lib/api";
 
 const MriUpload = () => {
   const navigate = useNavigate();
@@ -39,27 +40,39 @@ const MriUpload = () => {
     handleFileUpload(e.dataTransfer.files);
   };
 
-  const simulateUpload = () => {
+  const simulateUpload = async () => {
+    const session = getSession();
+    if (!session) {
+      toast({ title: "Not logged in", description: "Please login again.", variant: "destructive" });
+      navigate("/login");
+      return;
+    }
     setIsUploading(true);
     setUploadProgress(0);
-
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          toast({
-            title: "Upload Complete",
-            description: "MRI scans uploaded successfully. Processing for AI analysis...",
-          });
-          setTimeout(() => {
-            navigate("/patient/symptoms");
-          }, 2000);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
+    try {
+      // Save first file name or a dummy name if none
+      if (uploadedFiles[0]) {
+        await api.saveMri(session.id, uploadedFiles[0]);
+      }
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setIsUploading(false);
+            toast({
+              title: "Upload Complete",
+              description: "MRI scans saved. Continue to symptoms...",
+            });
+            setTimeout(() => navigate("/patient/symptoms"), 800);
+            return 100;
+          }
+          return prev + 20;
+        });
+      }, 150);
+    } catch (e: any) {
+      setIsUploading(false);
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    }
   };
 
   const removeFile = (index: number) => {
@@ -77,7 +90,7 @@ const MriUpload = () => {
               <span className="text-2xl font-bold">MRI Scan Upload</span>
             </div>
             <p className="text-muted-foreground">
-              Upload your brain MRI scans for AI-powered migraine analysis
+              Upload your brain MRI scans for AI-powered disease analysis
             </p>
           </div>
 
